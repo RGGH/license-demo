@@ -115,7 +115,7 @@ cargo run
 You should see:
 ```
 ╔════════════════════════════════════════╗
-║     🚀 TRIAL BINARY v1.0.0            ║
+║     🚀 TRIAL BINARY v1.0.0             ║
 ╚════════════════════════════════════════╝
 
 ✅ LICENSE VALID
@@ -123,7 +123,7 @@ You should see:
    Days remaining: 14
 
 ╔════════════════════════════════════════╗
-║     ✨ LICENSED APPLICATION ✨        ║
+║     ✨ LICENSED APPLICATION ✨         ║
 ╚════════════════════════════════════════╝
 
 Hello, demo-user! 👋
