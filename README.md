@@ -14,7 +14,7 @@ license-demo/
         └── main.rs
 ```
 
-## 🚀 Step-by-Step Demo
+## Step-by-Step Demo
 
 ### Step 1: Create License Server
 
@@ -150,7 +150,7 @@ curl -X POST http://127.0.0.1:8081/api/trial/revoke \
 cargo run  # Should fail: LICENSE REVOKED
 ```
 
-### Test 3: Tamper with Token 🔐
+### Test 3: Tamper with Token
 ```bash
 # Edit trial.token and change user_id
 # Then try running
@@ -162,7 +162,7 @@ cargo run  # Should fail: Signature verification failed!
 curl 'http://127.0.0.1:8081/api/trial/check?user_id=demo-user'
 ```
 
-### Test 5: Expired License ⏰
+### Test 5: Expired License
 To test expiry, modify the license server code to issue shorter trials:
 ```rust
 expires_at: now + (60), // 60 seconds instead of 14 days
@@ -234,7 +234,7 @@ For a real deployment, you'd want to:
 
 ---
 
-## 📝 Quick Reference
+## Quick Reference
 
 **Issue new trial:**
 ```bash
@@ -257,7 +257,7 @@ curl 'http://127.0.0.1:8081/api/trial/check?user_id=USERNAME'
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **"trial.token file not found"**
 - Make sure you've issued a token and moved the files to the binary directory
