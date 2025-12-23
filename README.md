@@ -27,5 +27,5 @@
 # 1 - Run the server
 
 # 2 - From trial-binary/ directory
-```cargo run --bin get-license -- my-user-id```                     # Get license
+```cargo run --bin get-license -- my-user-id```                     # Get license <br>
 ```cargo run```                                                     # Run app
