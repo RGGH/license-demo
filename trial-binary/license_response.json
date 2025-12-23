@@ -1,5 +1,0 @@
-{
-  "token": "{\"user_id\":\"demo-user3\",\"issued_at\":1766479769,\"expires_at\":1767689369}",
-  "signature": "c0a1c3a868ae266cefaa06c215afff60a03b7988a7b1784603f9a0abbec43af6aa1834c2e1ce923ea77739ab4e170f8e300bd0366d1c016408fc67a9e1b7d50f",
-  "message": "Trial issued for demo-user3 (14 days)"
-}

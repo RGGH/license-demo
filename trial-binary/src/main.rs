@@ -7,7 +7,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use std::fs;
 
 // 🔑 EMBED YOUR PUBLIC KEY HERE (get it from license server at startup)
-const PUBLIC_KEY_BYTES: [u8; 32] = hex_literal::hex!("b00d8a651dc7702f0e5f3ebc72b3f87aa5e8b8ad482904b9b8954a778ddc6122");
+const PUBLIC_KEY_BYTES: [u8; 32] = hex_literal::hex!("8dc206eb49557c078da3f41f5d1bfbd3c245c5d5035ba888a760a120d4c343fd");
 const GRACE_PERIOD_HOURS: u64 = 24; // Allow 24 hours offline
 const LAST_CHECK_FILE: &str = ".last_license_check";
 
