@@ -2,7 +2,8 @@
 // Run with: cargo run
 
 use actix_web::{web, App, HttpServer, HttpResponse, Result};
-use ed25519_dalek::{SigningKey, Signer, VerifyingKey, Signature};
+use ed25519_dalek::{SigningKey, Signer, VerifyingKey};
+use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::collections::HashMap;
@@ -134,7 +135,7 @@ async fn main() -> std::io::Result<()> {
     println!("🔐 License Server Starting...\n");
     
     // Generate keypair (in production, load from secure storage!)
-    let mut csprng = rand::rngs::OsRng;
+    let mut csprng = OsRng;
     let signing_key = SigningKey::generate(&mut csprng);
     let verifying_key = signing_key.verifying_key();
     

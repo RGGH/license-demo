@@ -7,7 +7,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use std::fs;
 
 // 🔑 EMBED YOUR PUBLIC KEY HERE (get it from license server at startup)
-const PUBLIC_KEY_BYTES: [u8; 32] = hex_literal::hex!("f7b9fc5cdcfc4980d90a48d9bdeac7bd2945b047d19c8bc0a3a94e764d1f1b07");
+const PUBLIC_KEY_BYTES: [u8; 32] = hex_literal::hex!("b00d8a651dc7702f0e5f3ebc72b3f87aa5e8b8ad482904b9b8954a778ddc6122");
+const GRACE_PERIOD_HOURS: u64 = 24; // Allow 24 hours offline
+const LAST_CHECK_FILE: &str = ".last_license_check";
 
 #[derive(Serialize, Deserialize)]
 struct TrialToken {
@@ -65,31 +67,62 @@ fn verify_trial_token(token_json: &str, signature_hex: &str) -> Result<TrialToke
     Ok(token)
 }
 
+fn check_grace_period() -> Result<bool, String> {
+    match fs::read_to_string(LAST_CHECK_FILE) {
+        Ok(content) => {
+            if let Ok(last_check) = content.trim().parse::<u64>() {
+                let now = current_timestamp();
+                let hours_since_check = (now - last_check) / 3600;
+                
+                if hours_since_check <= GRACE_PERIOD_HOURS {
+                    let hours_remaining = GRACE_PERIOD_HOURS - hours_since_check;
+                    println!("   Using offline grace period ({} hours remaining)", hours_remaining);
+                    Ok(true)
+                } else {
+                    Err(format!(
+                        "❌ LICENSE CHECK REQUIRED: Last online check was {} hours ago.\n   Please connect to the internet to verify your license.",
+                        hours_since_check
+                    ))
+                }
+            } else {
+                Err("❌ LICENSE CHECK REQUIRED: Could not read last check timestamp.\n   Please connect to the internet to verify your license.".to_string())
+            }
+        },
+        Err(_) => {
+            Err("❌ LICENSE CHECK REQUIRED: No previous online check found.\n   Please connect to the internet to verify your license.".to_string())
+        }
+    }
+}
+
 async fn check_revocation(user_id: &str) -> Result<bool, String> {
-    // Optional: Check with license server for revocation
+    // Check with license server for revocation
     let url = format!("http://127.0.0.1:8081/api/trial/check?user_id={}", user_id);
     
     match reqwest::get(&url).await {
         Ok(response) => {
+            // Online: Check revocation and update last check time
             match response.json::<serde_json::Value>().await {
                 Ok(data) => {
+                    // Save successful check timestamp
+                    let _ = fs::write(LAST_CHECK_FILE, current_timestamp().to_string());
+                    
                     if data["revoked"].as_bool().unwrap_or(false) {
                         Err("❌ LICENSE REVOKED: Your trial has been revoked by the license server.".to_string())
                     } else {
+                        println!("✅ License verified online");
                         Ok(true)
                     }
                 },
                 Err(e) => {
                     println!("⚠️  Warning: Could not parse server response: {}", e);
-                    println!("   Continuing with offline verification only...\n");
-                    Ok(true)
+                    check_grace_period()
                 }
             }
         },
         Err(e) => {
+            // Offline: Check if within grace period
             println!("⚠️  Warning: Could not reach license server: {}", e);
-            println!("   Continuing with offline verification only...\n");
-            Ok(true)
+            check_grace_period()
         }
     }
 }
@@ -107,9 +140,7 @@ async fn main() {
             eprintln!("❌ ERROR: trial.token file not found!");
             eprintln!("   Please obtain a trial license from the license server.\n");
             eprintln!("   Run this command:");
-            eprintln!("   curl -X POST http://127.0.0.1:8081/api/trial/issue \\");
-            eprintln!("        -H 'Content-Type: application/json' \\");
-            eprintln!("        -d '{{\"user_id\":\"demo-user\"}}'\n");
+            eprintln!("   cargo run --bin get-license -- demo-user\n");
             std::process::exit(1);
         }
     };
@@ -119,6 +150,8 @@ async fn main() {
         Err(_) => {
             eprintln!("❌ ERROR: trial.signature file not found!");
             eprintln!("   Please obtain a trial license from the license server.\n");
+            eprintln!("   Run this command:");
+            eprintln!("   cargo run --bin get-license -- demo-user\n");
             std::process::exit(1);
         }
     };
@@ -132,7 +165,7 @@ async fn main() {
         }
     };
     
-    // Check revocation (online)
+    // Check revocation (online with grace period)
     if let Err(e) = check_revocation(&token.user_id).await {
         eprintln!("{}\n", e);
         std::process::exit(1);
